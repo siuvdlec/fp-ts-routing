@@ -268,6 +268,34 @@ describe('Parser', () => {
     )
   })
 
+  it('query works with array partial', () => {
+    const Q = t.partial({ a: t.array(t.string) })
+
+    assert.strictEqual(
+      pipe(
+        query(Q).parser.run(Route.parse('/foo/bar?a[]=baz')),
+        exists(([{ a }]) => Array.isArray(a) && a[0] === 'baz')
+      ),
+      true
+    )
+
+    assert.deepStrictEqual(query(Q).formatter.run(Route.empty, { a: ['baz'] }), new Route([], { a: ['baz'] }))
+  })
+
+  it('query works with array strict', () => {
+    const Q = t.strict({ a: t.array(t.string) })
+
+    assert.strictEqual(
+      pipe(
+        query(Q).parser.run(Route.parse('/foo/bar?a[]=baz')),
+        exists(([{ a }]) => a[0] === 'baz')
+      ),
+      true
+    )
+
+    assert.deepStrictEqual(query(Q).formatter.run(Route.empty, { a: ['baz'] }), new Route([], { a: ['baz'] }))
+  })
+
   it('query deletes extranous params for exact partial codecs', () => {
     const Q = t.exact(t.partial({ a: t.string }))
 
